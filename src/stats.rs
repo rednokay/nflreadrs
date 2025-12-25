@@ -138,6 +138,61 @@ impl Downloader for Schedules {
     }
 }
 
+/// Downloader for play by play data.
+#[derive(Debug)]
+pub struct PlayByPlay {
+    seasons: Option<i32>,
+    base_url: &'static str,
+    client: blocking::Client,
+}
+
+impl PlayByPlay {
+    /// Create a new team play by play data downloader.
+    ///
+    /// This method is used to construct a downloader for play by play data.
+    ///
+    /// # Arguments
+    ///
+    /// * `seasons` -   Current season if None. Given season if Some.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use nflreadrs::stats::PlayByPlay;
+    ///
+    /// let seasons: Option<i32> = Some(2025);
+    ///
+    /// let play_by_play_dl = PlayByPlay::new(seasons);
+    ///
+    /// # use url::Url;
+    /// # use nflreadrs::downloader::Downloader;
+    /// # assert_eq!(play_by_play_dl.url().unwrap(), Url::parse("https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_2025.csv").unwrap())
+    /// ```
+    pub fn new(seasons: Option<i32>) -> Self {
+        Self {
+            seasons,
+            base_url: "https://github.com/nflverse/nflverse-data/releases/download/pbp/",
+            client: blocking::Client::new(),
+        }
+    }
+}
+
+impl Downloader for PlayByPlay {
+    /// Returns a valid URL to the download destination.
+    fn url(&self) -> Result<Url> {
+        let seasons = self.seasons.unwrap_or(utils::get_current_season(None));
+
+        let url = format!("{}play_by_play_{}.csv", self.base_url, seasons);
+
+        Ok(Url::parse(&url)?)
+    }
+
+    /// Return blocking client.
+    fn client(&self) -> &blocking::Client {
+        &self.client
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -182,6 +237,35 @@ mod tests {
             let team_stats = TeamStats::new(Some(vec![2000, 2012]), SummaryLevel::Post);
             let url = team_stats.url();
             assert!(url.is_err());
+        }
+    }
+
+    mod play_by_play_downloader_tests {
+        use super::*;
+
+        #[test]
+        fn test_correct_url_various_seasons() {
+            let cases = [(2025, "2025.csv"), (2006, "2006.csv")];
+
+            for (season, exp) in cases {
+                let play_by_play = PlayByPlay::new(Some(season));
+                let expected =
+                    Url::parse(&format!("{}play_by_play_{}", play_by_play.base_url, exp)).unwrap();
+                assert_eq!(play_by_play.url().unwrap(), expected);
+            }
+        }
+
+        #[test]
+        fn test_correct_url_seasons_none() {
+            let base = "https://github.com/nflverse/nflverse-data/releases/download/pbp/";
+            let play_by_play = PlayByPlay::new(None);
+            let expected_url = Url::parse(&format!(
+                "{}play_by_play_{}.csv",
+                base,
+                utils::get_current_season(None)
+            ))
+            .unwrap();
+            assert_eq!(play_by_play.url().unwrap(), expected_url);
         }
     }
 }

@@ -13,3 +13,4 @@ libraries to the Rust programming language.
 
 * Improve errors with thiserror
 * Support for parquet
+* Caching/using already downloaded files when feasible

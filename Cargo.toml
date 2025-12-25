@@ -5,6 +5,8 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.100"
+chrono = "0.4.42"
+chrono-tz = "0.10.4"
 polars = "0.52.0"
 reqwest = { version = "0.12.28", features = ["blocking"] }
 strum = { version = "0.27.2", features = ["derive"] }

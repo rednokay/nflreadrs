@@ -10,7 +10,7 @@ pub enum SummaryLevel {
     Week,
     Reg,
     Post,
-    RegNPost,
+    RegPost,
 }
 
 /// Downloader for team stats.
@@ -62,12 +62,10 @@ impl TeamStats {
 impl Downloader for TeamStats {
     /// Returns a valid URL to the download destination.
     fn url(&self) -> Result<Url> {
-        // TODO: handle RegNPost probalby using strum
         let summary = self.summary_level.to_string().to_lowercase();
 
-        // TODO: Not hardcode year
         let seasons = match &self.seasons {
-            None => 2025,
+            None => crate::utils::get_current_season(None),
             Some(v) => match v.len() {
                 1 => v[0],
                 _ => anyhow::bail!("Unhandled season case {:?}", self.seasons),
@@ -82,5 +80,53 @@ impl Downloader for TeamStats {
     /// Return blocking client.
     fn client(&self) -> &blocking::Client {
         &self.client
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod team_stats_downloader_tests {
+        use super::*;
+
+        #[test]
+        fn test_correct_url_various_seasons_and_summary_levels() {
+            let cases = [
+                // (summary level, season, expected url ending)
+                (SummaryLevel::Post, 2035, "post_2035"),
+                (SummaryLevel::Reg, 2005, "reg_2005"),
+                (SummaryLevel::Week, 2017, "week_2017"),
+                (SummaryLevel::RegPost, 2011, "regpost_2011"),
+            ];
+            let base = "https://github.com/nflverse/nflverse-data/releases/download/stats_team/stats_team_";
+
+            for (sum_lvl, season, exp) in cases {
+                let team_stats = TeamStats::new(Some(vec![season]), sum_lvl);
+                let expected_url = Url::parse(&format!("{}{}.csv", base, exp)).unwrap();
+                assert_eq!(team_stats.url().unwrap(), expected_url);
+            }
+        }
+
+        #[test]
+        fn test_correct_url_seasons_none() {
+            let base = "https://github.com/nflverse/nflverse-data/releases/download/stats_team/stats_team_";
+            let team_stats = TeamStats::new(None, SummaryLevel::RegPost);
+            let expected_url = Url::parse(&format!(
+                "{}regpost_{}.csv",
+                base,
+                crate::utils::get_current_season(None)
+            ))
+            .unwrap();
+            assert_eq!(team_stats.url().unwrap(), expected_url);
+        }
+
+        // TODO: This behavior will be changed
+        #[test]
+        fn test_correct_url_season_vec() {
+            let team_stats = TeamStats::new(Some(vec![2000, 2012]), SummaryLevel::Post);
+            let url = team_stats.url();
+            assert!(url.is_err());
+        }
     }
 }

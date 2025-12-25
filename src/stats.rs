@@ -1,6 +1,8 @@
 use crate::downloader::Downloader;
+use crate::utils;
 use anyhow::Result;
 use reqwest::blocking;
+use std::default::Default;
 use strum::Display;
 use url::Url;
 
@@ -65,7 +67,7 @@ impl Downloader for TeamStats {
         let summary = self.summary_level.to_string().to_lowercase();
 
         let seasons = match &self.seasons {
-            None => crate::utils::get_current_season(None),
+            None => utils::get_current_season(None),
             Some(v) => match v.len() {
                 1 => v[0],
                 _ => anyhow::bail!("Unhandled season case {:?}", self.seasons),
@@ -75,6 +77,59 @@ impl Downloader for TeamStats {
         let url = format!("{}stats_team_{}_{}.csv", self.base_url, summary, seasons);
 
         Ok(Url::parse(&url)?)
+    }
+
+    /// Return blocking client.
+    fn client(&self) -> &blocking::Client {
+        &self.client
+    }
+}
+
+/// Downloader for schedules.
+#[derive(Debug)]
+pub struct Schedules {
+    base_url: &'static str,
+    client: blocking::Client,
+}
+
+impl Schedules {
+    /// Create a new schedules downloader.
+    ///
+    /// This method is used to construct a downloader for schedules using the Default trait.
+    /// The source does not provide any seasons or summary levels, all available schedules will be loaded.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use nflreadrs::stats::Schedules;
+    ///
+    /// let schedules_dl = Schedules::new();
+    ///
+    /// # use url::Url;
+    /// # use nflreadrs::downloader::Downloader;
+    /// # assert_eq!(schedules_dl.url().unwrap(), Url::parse("https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv").unwrap())
+    /// ```
+    pub fn new() -> Self {
+        Schedules::default()
+    }
+}
+
+impl Default for Schedules {
+    // Default constructor for schedules downloader.
+    fn default() -> Self {
+        Self {
+            base_url: "https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv",
+            client: blocking::Client::new(),
+        }
+    }
+}
+
+impl Downloader for Schedules {
+    /// Returns a valid URL to the download destination.
+    ///
+    /// Here the download URL is the base url as the source does not provide seasons or summary levels
+    fn url(&self) -> Result<Url> {
+        Ok(Url::parse(self.base_url)?)
     }
 
     /// Return blocking client.
@@ -115,7 +170,7 @@ mod tests {
             let expected_url = Url::parse(&format!(
                 "{}regpost_{}.csv",
                 base,
-                crate::utils::get_current_season(None)
+                utils::get_current_season(None)
             ))
             .unwrap();
             assert_eq!(team_stats.url().unwrap(), expected_url);

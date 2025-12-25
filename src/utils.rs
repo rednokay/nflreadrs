@@ -21,10 +21,7 @@ impl Clock for RealClock {
 
 /// Private function to calculate current season.
 fn get_current_season_internal(roster: Option<bool>, clock: &impl Clock) -> i32 {
-    let roster = match roster {
-        Some(r) => r,
-        None => false,
-    };
+    let roster = roster.unwrap_or_default();
 
     let now = clock.now();
     let year = now.year();
@@ -32,7 +29,7 @@ fn get_current_season_internal(roster: Option<bool>, clock: &impl Clock) -> i32 
     if roster {
         // Roster logic: current year after March 15, otherwise previous year.
         let march_15 = Eastern.with_ymd_and_hms(year, 3, 15, 0, 0, 0).unwrap();
-        return if now >= march_15 { year } else { year - 1 };
+        if now >= march_15 { year } else { year - 1 }
     } else {
         // Season logic: current year after Thursday following Labor Day.
         // Labor day is the first Monday in september.
@@ -46,7 +43,7 @@ fn get_current_season_internal(roster: Option<bool>, clock: &impl Clock) -> i32 
             .from_local_datetime(&season_start.and_hms_opt(0, 0, 0).unwrap())
             .unwrap();
 
-        return if now >= season_start { year } else { year - 1 };
+        if now >= season_start { year } else { year - 1 }
     }
 }
 
@@ -72,7 +69,6 @@ fn get_current_season_internal(roster: Option<bool>, clock: &impl Clock) -> i32 
 /// let current_season = get_current_season(roster);
 /// # assert!(current_season >= 2025);
 /// ```
-
 pub fn get_current_season(roster: Option<bool>) -> i32 {
     get_current_season_internal(roster, &RealClock)
 }

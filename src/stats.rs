@@ -24,6 +24,31 @@ pub struct TeamStats {
 
 impl TeamStats {
     /// Create a new team stats downloader.
+    ///
+    /// This method is used to construct a downloader for teams stats.
+    ///
+    /// # Arguments
+    ///
+    /// * `seasons` -   Current season if None. A vector of the desired season if Some.
+    /// * `summary_level`   -   Summary level of the data to retrieve.
+    ///
+    /// # Panics
+    ///
+    /// Panics if a vector of length greater than one is passed. These vectors are not supported yet.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use nflreadrs::stats::{SummaryLevel, TeamStats};
+    ///
+    /// let seasons: Option<Vec<i32>> = Some(vec![2025]);
+    ///
+    /// let team_stats_dl = TeamStats::new(seasons, SummaryLevel::Reg);
+    ///
+    /// # use url::Url;
+    /// # use nflreadrs::downloader::Downloader;
+    /// # assert_eq!(team_stats_dl.url().unwrap(), Url::parse("https://github.com/nflverse/nflverse-data/releases/download/stats_team/stats_team_reg_2025.csv").unwrap())
+    /// ```
     pub fn new(seasons: Option<Vec<i32>>, summary_level: SummaryLevel) -> Self {
         Self {
             seasons,
@@ -35,6 +60,7 @@ impl TeamStats {
 }
 
 impl Downloader for TeamStats {
+    /// Returns a valid URL to the download destination.
     fn url(&self) -> Result<Url> {
         // TODO: handle RegNPost probalby using strum
         let summary = self.summary_level.to_string().to_lowercase();
@@ -53,15 +79,8 @@ impl Downloader for TeamStats {
         Ok(Url::parse(&url)?)
     }
 
+    /// Return blocking client.
     fn client(&self) -> &blocking::Client {
         &self.client
     }
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//
-//     #[test]
-//     todo!();
-// }

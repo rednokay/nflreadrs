@@ -1,4 +1,3 @@
-
 use anyhow::Result;
 use polars::prelude::*;
 use reqwest::blocking;
@@ -51,6 +50,13 @@ where
 }
 
 /// Called on a Downloader to pull the data to a DataFrame.
+///
+/// This fetches the desired data by downloading it into the temporary directory,
+/// loads it into memory and returns it as a polars::DataFrame.
+///
+/// # Arguments
+///
+/// * `downloader`  -   The struct relating to the desired stats. Needs to implement Downloader.
 pub fn pull<D>(downloader: &D) -> Result<DataFrame>
 where
     D: Downloader,
@@ -58,11 +64,3 @@ where
     let path_to_file = fetch_content(downloader)?;
     from_csv(path_to_file)
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//
-//     #[test]
-//     todo!();
-// }

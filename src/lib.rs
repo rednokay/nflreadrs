@@ -43,7 +43,7 @@ pub mod downloader {
 
         let mut path = downloader.tmp_dir();
         let id = Uuid::new_v4().to_string();
-        path.push(format!("nflreadpy-{}.csv", &id));
+        path.push(format!("nflreadrs-{}.csv", &id));
 
         let mut file = File::create(&path)?;
 

@@ -1,3 +1,4 @@
+//! Generate configuration for a wanted download.
 use crate::downloader::Downloader;
 use crate::utils;
 use anyhow::Result;
@@ -7,6 +8,8 @@ use strum::Display;
 use url::Url;
 
 /// Summary levels describing the scope of the data.
+///
+/// Some stat downloaders need a specified scope.
 #[derive(Debug, Display)]
 pub enum SummaryLevel {
     Week,

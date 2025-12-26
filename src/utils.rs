@@ -67,7 +67,7 @@ fn get_current_season_internal(roster: Option<bool>, clock: &impl Clock) -> i32 
 ///
 /// let roster = Some(true);
 /// let current_season = get_current_season(roster);
-/// # assert!(current_season >= 2025);
+/// assert!(current_season >= 2025);
 /// ```
 pub fn get_current_season(roster: Option<bool>) -> i32 {
     get_current_season_internal(roster, &RealClock)

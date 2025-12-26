@@ -1,3 +1,4 @@
+//! Download data with specified configuration.
 use anyhow::Result;
 use polars::prelude::*;
 use reqwest::blocking;

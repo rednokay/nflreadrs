@@ -23,9 +23,10 @@ pub trait Downloader {
 }
 
 /// Reads a downloaded CSV file to DataFrame.
-fn from_csv(path: PathBuf) -> Result<DataFrame> {
+fn from_csv(path: PathBuf, infer_rows: Option<usize>) -> Result<DataFrame> {
     Ok(CsvReadOptions::default()
         .with_has_header(true)
+        .with_infer_schema_length(infer_rows)
         .try_into_reader_with_file_path(Some(path))?
         .finish()?)
 }
@@ -63,5 +64,5 @@ where
     D: Downloader,
 {
     let path_to_file = fetch_content(downloader)?;
-    from_csv(path_to_file)
+    from_csv(path_to_file, None)
 }

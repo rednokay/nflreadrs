@@ -6,7 +6,7 @@ description = "Crate to pull data from nflverse's NFL database."
 repository = "https://github.com/rednokay"
 license = "MIT"
 readme = "README.md"
-keywords = ["NFL", "sports", "gamedata", "sportsdata"]
+keywords = ["NFL", "sports", "game-data", "sports-data"]
 categories = ["api-bindings", "database"]
 exclude = [".github/workflows/ci.yml", ".gitignore"]
 

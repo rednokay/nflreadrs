@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-12-27
+
+### Added
+- Player stats downloader
+- Teams downloader
+- Players downloader
+- Rosters downloader
+
+### Fixed
+- Repo entry in Cargo.toml linked to my profile instead of the reop
+
 ## [0.1.2] - 2025-12-27
 
 ### Added

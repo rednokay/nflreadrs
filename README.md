@@ -2,7 +2,7 @@
 
 [![Crates.io Version](https://img.shields.io/crates/v/nflreadrs.svg)](https://crates.io/crates/nflreadrs)
 [![License](https://img.shields.io/crates/l/nflreadrs.svg)](https://crates.io/crates/nflreadrs)
-[![Docs.rs](docs.rs/nflreadrs/badge.svg)](https://docs.rs/nflreadrs)
+[![Docs.rs](https://img.shields.io/docsrs/nflreadrs/latest)](https://docs.rs/nflreadrs)
 
 
 > [!NOTE]

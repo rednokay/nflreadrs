@@ -1,6 +1,6 @@
 //! Generate configuration for a wanted download.
 use crate::downloader::Downloader;
-use crate::utils;
+use crate::utils::{self, get_current_season};
 use anyhow::Result;
 use std::default::Default;
 use strum::Display;
@@ -174,6 +174,58 @@ impl Downloader for PlayByPlay {
     }
 }
 
+/// Downloader for player stats.
+#[derive(Debug)]
+pub struct PlayerStats {
+    seasons: Option<i32>,
+    summary_level: SummaryLevel,
+    base_url: &'static str,
+}
+
+impl PlayerStats {
+    /// Create a new player stats downloader.
+    ///
+    /// This method is used to construct a downloader for teams stats.
+    ///
+    /// # Arguments
+    ///
+    /// * `seasons` -   Current season if None. Given season if Some.
+    /// * `summary_level`   -   Summary level of the data to retrieve.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use nflreadrs::stats::{SummaryLevel, PlayerStats};
+    ///
+    /// let seasons: Option<i32> = Some(2025);
+    ///
+    /// let player_stats_dl = PlayerStats::new(seasons, SummaryLevel::Reg);
+    ///
+    /// # use url::Url;
+    /// # use nflreadrs::downloader::Downloader;
+    /// # assert_eq!(player_stats_dl.url().unwrap(), Url::parse("https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_reg_2025.csv").unwrap())
+    /// ```
+    pub fn new(seasons: Option<i32>, summary_level: SummaryLevel) -> Self {
+        Self {
+            seasons,
+            summary_level,
+            base_url: "https://github.com/nflverse/nflverse-data/releases/download/stats_player/",
+        }
+    }
+}
+
+impl Downloader for PlayerStats {
+    /// Returns a valid URL to the download destination.
+    fn url(&self) -> Result<Url> {
+        let summary = self.summary_level.to_string().to_lowercase();
+
+        let seasons = self.seasons.unwrap_or(get_current_season(None));
+        let url = format!("{}stats_player_{}_{}.csv", self.base_url, summary, seasons);
+
+        Ok(Url::parse(&url)?)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -247,6 +299,41 @@ mod tests {
             ))
             .unwrap();
             assert_eq!(play_by_play.url().unwrap(), expected_url);
+        }
+    }
+
+    mod player_stats_downloader_tests {
+        use super::*;
+
+        #[test]
+        fn test_correct_url_various_seasons_and_summary_levels() {
+            let cases = [
+                // (summary level, season, expected url ending)
+                (SummaryLevel::Post, 2035, "post_2035"),
+                (SummaryLevel::Reg, 2005, "reg_2005"),
+                (SummaryLevel::Week, 2017, "week_2017"),
+                (SummaryLevel::RegPost, 2011, "regpost_2011"),
+            ];
+            let base = "https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_";
+
+            for (sum_lvl, season, exp) in cases {
+                let team_stats = PlayerStats::new(Some(season), sum_lvl);
+                let expected_url = Url::parse(&format!("{}{}.csv", base, exp)).unwrap();
+                assert_eq!(team_stats.url().unwrap(), expected_url);
+            }
+        }
+
+        #[test]
+        fn test_correct_url_seasons_none() {
+            let base = "https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_";
+            let team_stats = PlayerStats::new(None, SummaryLevel::RegPost);
+            let expected_url = Url::parse(&format!(
+                "{}regpost_{}.csv",
+                base,
+                utils::get_current_season(None)
+            ))
+            .unwrap();
+            assert_eq!(team_stats.url().unwrap(), expected_url);
         }
     }
 }

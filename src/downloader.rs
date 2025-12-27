@@ -2,6 +2,7 @@
 use anyhow::Result;
 use polars::prelude::*;
 use reqwest::blocking;
+use reqwest::header::{ACCEPT, HeaderMap, HeaderValue, USER_AGENT};
 use std::env;
 use std::fs::File;
 use std::path::PathBuf;
@@ -17,9 +18,6 @@ pub trait Downloader {
 
     /// Returns the URL path for this downloader.
     fn url(&self) -> Result<Url>;
-
-    /// Returns the client for the downloader.
-    fn client(&self) -> &blocking::Client;
 }
 
 /// Reads a downloaded CSV file to DataFrame.
@@ -38,7 +36,18 @@ fn fetch_content<D>(downloader: &D) -> Result<PathBuf>
 where
     D: Downloader,
 {
-    let mut response = downloader.client().get(downloader.url()?).send()?;
+    let client = blocking::Client::new();
+    let mut headers = HeaderMap::new();
+    headers.append(USER_AGENT, HeaderValue::from_static("nflreadrs"));
+    headers.append(
+        ACCEPT,
+        HeaderValue::from_static("application/vnd.github+json"),
+    );
+    headers.append(
+        "X-GitHub-Api-Version",
+        HeaderValue::from_static("2022-11-28"),
+    );
+    let mut response = client.get(downloader.url()?).headers(headers).send()?;
 
     let mut path = downloader.tmp_dir();
     let id = Uuid::new_v4().to_string();

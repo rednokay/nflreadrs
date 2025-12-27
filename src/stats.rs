@@ -2,7 +2,6 @@
 use crate::downloader::Downloader;
 use crate::utils;
 use anyhow::Result;
-use reqwest::blocking;
 use std::default::Default;
 use strum::Display;
 use url::Url;
@@ -24,7 +23,6 @@ pub struct TeamStats {
     seasons: Option<Vec<i32>>,
     summary_level: SummaryLevel,
     base_url: &'static str,
-    client: blocking::Client,
 }
 
 impl TeamStats {
@@ -59,7 +57,6 @@ impl TeamStats {
             seasons,
             summary_level,
             base_url: "https://github.com/nflverse/nflverse-data/releases/download/stats_team/",
-            client: blocking::Client::new(),
         }
     }
 }
@@ -81,18 +78,12 @@ impl Downloader for TeamStats {
 
         Ok(Url::parse(&url)?)
     }
-
-    /// Return blocking client.
-    fn client(&self) -> &blocking::Client {
-        &self.client
-    }
 }
 
 /// Downloader for schedules.
 #[derive(Debug)]
 pub struct Schedules {
     base_url: &'static str,
-    client: blocking::Client,
 }
 
 impl Schedules {
@@ -122,7 +113,6 @@ impl Default for Schedules {
     fn default() -> Self {
         Self {
             base_url: "https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv",
-            client: blocking::Client::new(),
         }
     }
 }
@@ -134,11 +124,6 @@ impl Downloader for Schedules {
     fn url(&self) -> Result<Url> {
         Ok(Url::parse(self.base_url)?)
     }
-
-    /// Return blocking client.
-    fn client(&self) -> &blocking::Client {
-        &self.client
-    }
 }
 
 /// Downloader for play by play data.
@@ -146,7 +131,6 @@ impl Downloader for Schedules {
 pub struct PlayByPlay {
     seasons: Option<i32>,
     base_url: &'static str,
-    client: blocking::Client,
 }
 
 impl PlayByPlay {
@@ -175,7 +159,6 @@ impl PlayByPlay {
         Self {
             seasons,
             base_url: "https://github.com/nflverse/nflverse-data/releases/download/pbp/",
-            client: blocking::Client::new(),
         }
     }
 }
@@ -188,11 +171,6 @@ impl Downloader for PlayByPlay {
         let url = format!("{}play_by_play_{}.csv", self.base_url, seasons);
 
         Ok(Url::parse(&url)?)
-    }
-
-    /// Return blocking client.
-    fn client(&self) -> &blocking::Client {
-        &self.client
     }
 }
 

@@ -1,6 +1,6 @@
 [package]
 name = "nflreadrs"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 description = "Crate to pull data from nflverse's NFL database."
 repository = "https://github.com/rednokay"

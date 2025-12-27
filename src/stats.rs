@@ -226,6 +226,52 @@ impl Downloader for PlayerStats {
     }
 }
 
+/// Downloader for teams.
+#[derive(Debug)]
+pub struct Teams {
+    base_url: &'static str,
+}
+
+impl Teams {
+    /// Create a new teams downloader.
+    ///
+    /// This method is used to construct a downloader for teams using the Default trait.
+    /// The source does not provide any seasons or summary levels, all available teams will be loaded.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use nflreadrs::stats::Teams;
+    ///
+    /// let teams_dl = Teams::new();
+    ///
+    /// # use url::Url;
+    /// # use nflreadrs::downloader::Downloader;
+    /// # assert_eq!(teams_dl.url().unwrap(), Url::parse("https://github.com/nflverse/nflverse-data/releases/download/teams/teams_colors_logos.csv").unwrap())
+    /// ```
+    pub fn new() -> Self {
+        Teams::default()
+    }
+}
+
+impl Default for Teams {
+    // Default constructor for Teams downloader.
+    fn default() -> Self {
+        Self {
+            base_url: "https://github.com/nflverse/nflverse-data/releases/download/teams/teams_colors_logos.csv",
+        }
+    }
+}
+
+impl Downloader for Teams {
+    /// Returns a valid URL to the download destination.
+    ///
+    /// Here the download URL is the base url as the source does not provide seasons or summary levels
+    fn url(&self) -> Result<Url> {
+        Ok(Url::parse(self.base_url)?)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

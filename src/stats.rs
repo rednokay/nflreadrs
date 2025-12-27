@@ -318,6 +318,54 @@ impl Downloader for Players {
     }
 }
 
+/// Downloader for play by play data.
+#[derive(Debug)]
+pub struct Rosters {
+    seasons: Option<i32>,
+    base_url: &'static str,
+}
+
+impl Rosters {
+    /// Create a new team Rosters downloader.
+    ///
+    /// This method is used to construct a downloader for Rosters.
+    ///
+    /// # Arguments
+    ///
+    /// * `seasons` -   Current season if None. Given season if Some.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use nflreadrs::stats::Rosters;
+    ///
+    /// let seasons: Option<i32> = Some(2025);
+    ///
+    /// let rosters_dl = Rosters::new(seasons);
+    ///
+    /// # use url::Url;
+    /// # use nflreadrs::downloader::Downloader;
+    /// # assert_eq!(rosters_dl.url().unwrap(), Url::parse("https://github.com/nflverse/nflverse-data/releases/download/rosters/roster_2025.csv").unwrap())
+    /// ```
+    pub fn new(seasons: Option<i32>) -> Self {
+        Self {
+            seasons,
+            base_url: "https://github.com/nflverse/nflverse-data/releases/download/rosters/",
+        }
+    }
+}
+
+impl Downloader for Rosters {
+    /// Returns a valid URL to the download destination.
+    fn url(&self) -> Result<Url> {
+        let seasons = self.seasons.unwrap_or(utils::get_current_season(None));
+
+        let url = format!("{}roster_{}.csv", self.base_url, seasons);
+
+        Ok(Url::parse(&url)?)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

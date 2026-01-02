@@ -11,11 +11,6 @@ use uuid::Uuid;
 
 /// Trait that is implemented to download wanted stats.
 pub trait Downloader {
-    /// Returns a temporary directory to download into.
-    fn tmp_dir(&self) -> PathBuf {
-        env::temp_dir()
-    }
-
     /// Returns the URL path for this downloader.
     fn url(&self) -> Result<Url>;
 }

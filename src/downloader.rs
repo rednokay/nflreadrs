@@ -29,37 +29,6 @@ fn from_csv(path: PathBuf, infer_rows: Option<usize>) -> Result<DataFrame> {
         .finish()?)
 }
 
-/// Download the CSV file.
-///
-/// Downloads the CSV file with the wanted data into a temporary directory.
-fn fetch_content<D>(downloader: &D) -> Result<PathBuf>
-where
-    D: Downloader,
-{
-    let client = blocking::Client::new();
-    let mut headers = HeaderMap::new();
-    headers.append(USER_AGENT, HeaderValue::from_static("nflreadrs"));
-    headers.append(
-        ACCEPT,
-        HeaderValue::from_static("application/vnd.github+json"),
-    );
-    headers.append(
-        "X-GitHub-Api-Version",
-        HeaderValue::from_static("2022-11-28"),
-    );
-    let mut response = client.get(downloader.url()?).headers(headers).send()?;
-
-    let mut path = downloader.tmp_dir();
-    let id = Uuid::new_v4().to_string();
-    path.push(format!("nflreadrs-{}.csv", &id));
-
-    let mut file = File::create(&path)?;
-
-    response.copy_to(&mut file)?;
-
-    Ok(path)
-}
-
 /// Called on a Downloader to pull the data to a DataFrame.
 ///
 /// This fetches the desired data by downloading it into the temporary directory,
@@ -72,7 +41,7 @@ pub fn pull<D>(downloader: &D) -> Result<DataFrame>
 where
     D: Downloader,
 {
-    let path_to_file = fetch_content(downloader)?;
+    let path_to_file = download_to(downloader, None, None)?;
     from_csv(path_to_file, None)
 }
 
@@ -88,7 +57,7 @@ fn create_headers() -> HeaderMap {
         "X-GitHub-Api-Version",
         HeaderValue::from_static("2022-11-28"),
     );
-    return headers;
+    headers
 }
 
 /// Called on a downloader to download data to a specified path.
